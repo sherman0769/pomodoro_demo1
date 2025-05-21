@@ -3,24 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>專業番茄鬧鐘</title>
+  <title>升級版番茄鬧鐘</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <!-- 頭像開始 -->
-    <div class="avatar-box">
-      <img src="avatar.png" alt="李詩民頭像" class="avatar">
+    <!-- 頭像與右上角番茄數 -->
+    <div class="avatar-row">
+      <div class="avatar-box">
+        <img src="avatar.png" alt="李詩民頭像" class="avatar">
+      </div>
+      <div class="counter-area">
+        <span id="todayCount" class="pomodoro-count">今日完成：0</span>
+        <button id="themeToggle" class="theme-btn" title="切換主題">🌙</button>
+      </div>
     </div>
-    <!-- 頭像結束 -->
     <h1>番茄鬧鐘</h1>
     <form class="settings" id="settingsForm">
       <label>
-        工作(分鐘)
+        工作(分)
         <input type="number" id="workInput" min="1" max="90" value="25">
       </label>
       <label>
-        休息(分鐘)
+        休息(分)
         <input type="number" id="restInput" min="1" max="30" value="5">
       </label>
       <label class="mute-label">
@@ -34,6 +39,16 @@
       <button id="resetBtn">重設</button>
     </div>
     <div class="session-type" id="sessionType">工作時間</div>
+
+    <!-- 任務清單區 -->
+    <div class="todo-area">
+      <h2>今日待辦</h2>
+      <form id="todoForm">
+        <input type="text" id="todoInput" placeholder="輸入任務..." autocomplete="off">
+        <button type="submit" id="todoAddBtn">＋</button>
+      </form>
+      <ul id="todoList"></ul>
+    </div>
   </div>
   <footer>
     <div class="footer-content">李詩民</div>
