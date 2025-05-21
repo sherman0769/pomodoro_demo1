@@ -24,6 +24,20 @@ body {
   box-shadow: 0 4px 24px rgba(0,0,0,0.13);
   text-align: center;
 }
+
+/* 頭像樣式 */
+.avatar-box {
+  margin-bottom: 1rem;
+}
+.avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(217, 83, 79, 0.10);
+}
+
 h1 {
   font-size: 2.2rem;
   margin-bottom: 1.1rem;
@@ -109,6 +123,10 @@ footer {
     margin: 20px 0 0 0;
     padding: 1rem 0.3rem 0.6rem 0.3rem;
     border-radius: 11px;
+  }
+  .avatar {
+    width: 60px;
+    height: 60px;
   }
   .timer {
     font-size: 2.4rem;
