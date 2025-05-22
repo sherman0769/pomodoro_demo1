@@ -127,8 +127,6 @@ function startTimer() {
         isWorkSession = true;                  // 切換為工作狀態
         remainingSeconds = workMin * 60;
       }
-
-      }
       sessionDuration = remainingSeconds;
       updateDisplay();
       isRunning = false;
