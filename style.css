@@ -175,6 +175,42 @@ button:hover {
   font-weight: 500;
   transition: color 0.2s;
 }
+
+.hidden {
+  display: none;
+}
+
+.game-area {
+  position: relative;
+  height: 130px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
+  overflow: hidden;
+}
+body.dark .game-area {
+  background: #23232b;
+  border-color: #666;
+}
+.catch-btn {
+  position: absolute;
+  padding: 0.4em 0.8em;
+  border-radius: 6px;
+  background: var(--main-color);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.19s;
+}
+.catch-btn:hover { background: var(--main-color-dark); }
+.score-display {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
 .todo-area {
   margin: 1.5rem 0 0.2rem 0;
   text-align: left;

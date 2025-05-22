@@ -25,6 +25,13 @@ const themeToggle = document.getElementById('themeToggle');
 const todayCountElem = document.getElementById('todayCount');
 const progressBar = document.getElementById('progressBar');
 
+// game 區
+const gameArea = document.getElementById('gameArea');
+const catchBtn = document.getElementById('catchBtn');
+const scoreDisplay = document.getElementById('scoreDisplay');
+let gameInterval = null;
+let gameScore = 0;
+
 // todo區
 const todoForm = document.getElementById('todoForm');
 const todoInput = document.getElementById('todoInput');
@@ -57,7 +64,38 @@ function updateDisplay() {
     const pct = ((sessionDuration - remainingSeconds) / sessionDuration) * 100;
     progressBar.style.width = pct + '%';
   }
+
 }
+
+// ======= 休息小遊戲 =======
+function moveCatchBtn() {
+  const areaRect = gameArea.getBoundingClientRect();
+  const btnRect = catchBtn.getBoundingClientRect();
+  const maxLeft = areaRect.width - btnRect.width;
+  const maxTop = areaRect.height - btnRect.height;
+  catchBtn.style.left = Math.random() * maxLeft + 'px';
+  catchBtn.style.top = Math.random() * maxTop + 'px';
+}
+
+function showGame() {
+  gameScore = 0;
+  scoreDisplay.textContent = '得分：0';
+  gameArea.classList.remove('hidden');
+  moveCatchBtn();
+  gameInterval = setInterval(moveCatchBtn, 1000);
+
+}
+
+function hideGame() {
+  gameArea.classList.add('hidden');
+  clearInterval(gameInterval);
+}
+
+catchBtn.onclick = () => {
+  gameScore++;
+  scoreDisplay.textContent = '得分：' + gameScore;
+  moveCatchBtn();
+};
 function startTimer() {
   if (isRunning) return;
   isRunning = true;
@@ -69,17 +107,27 @@ function startTimer() {
     } else {
       clearInterval(timer);
       if (!isMuted) beep.play();
-      if (isWorkSession) increaseCount();
-      alert(isWorkSession ? '工作結束！休息一下吧！' : '休息結束，繼續努力！');
       if (isWorkSession) {
-        sessionCount++;
-      }
-      isWorkSession = !isWorkSession;
-      if (isWorkSession) {
-        remainingSeconds = workMin * 60;
-      } else {
+        // ── 結束工作 → 進入休息 ──
+        increaseCount();                       // 累計完成番茄數
+        alert('工作結束！休息一下吧！');
+        sessionCount++;                        // 用於判斷長休息
+        isWorkSession = false;                 // 切換為休息狀態
+
+        // 每 4 次工作給一次長休
         const restTime = (sessionCount % 4 === 0) ? longRestMin : restMin;
         remainingSeconds = restTime * 60;
+
+        showGame();                            // 顯示休息小遊戲
+      } else {
+        // ── 結束休息 → 回到工作 ──
+        alert(`休息結束，繼續努力！ 本次得分：${gameScore}`);
+        hideGame();                            // 關閉小遊戲
+        gameScore = 0;                         // 重設得分
+        isWorkSession = true;                  // 切換為工作狀態
+        remainingSeconds = workMin * 60;
+      }
+
       }
       sessionDuration = remainingSeconds;
       updateDisplay();
@@ -101,6 +149,10 @@ function resetTimer() {
   remainingSeconds = workMin * 60;
   sessionDuration = remainingSeconds;
   sessionCount = 0;
+
+  hideGame();
+  gameScore = 0;
+
   updateDisplay();
 }
 function applySettings() {
@@ -111,6 +163,10 @@ function applySettings() {
     isWorkSession = true;
     remainingSeconds = workMin * 60;
     sessionDuration = remainingSeconds;
+
+    hideGame();
+    gameScore = 0;
+
     updateDisplay();
   }
 }
