@@ -1,11 +1,14 @@
 // ======= 初始化參數與元素 =======
 let workMin = 25;
 let restMin = 5;
+let longRestMin = 15;
 let timer = null;
 let isRunning = false;
 let isWorkSession = true;
 let remainingSeconds = workMin * 60;
+let sessionDuration = remainingSeconds;
 let isMuted = false;
+let sessionCount = 0;
 
 const timerDisplay = document.getElementById('timer');
 const startPauseBtn = document.getElementById('startPauseBtn');
@@ -14,10 +17,20 @@ const sessionType = document.getElementById('sessionType');
 const beep = document.getElementById('beep');
 const workInput = document.getElementById('workInput');
 const restInput = document.getElementById('restInput');
+const longRestInput = document.getElementById('longRestInput');
 const muteCheckbox = document.getElementById('muteCheckbox');
+const volumeInput = document.getElementById('volumeInput');
 const settingsForm = document.getElementById('settingsForm');
 const themeToggle = document.getElementById('themeToggle');
 const todayCountElem = document.getElementById('todayCount');
+const progressBar = document.getElementById('progressBar');
+
+// game 區
+const gameArea = document.getElementById('gameArea');
+const catchBtn = document.getElementById('catchBtn');
+const scoreDisplay = document.getElementById('scoreDisplay');
+let gameInterval = null;
+let gameScore = 0;
 
 // todo區
 const todoForm = document.getElementById('todoForm');
@@ -33,6 +46,8 @@ function setTheme(dark) {
 themeToggle.onclick = () => setTheme(!document.body.classList.contains('dark'));
 window.onload = function() {
   setTheme(localStorage.getItem('pomodoro_theme') === 'dark');
+  volumeInput.value = localStorage.getItem('pomodoro_volume') || '1';
+  updateVolume();
   loadTodo();
   loadCount();
   updateDisplay();
@@ -45,10 +60,44 @@ function updateDisplay() {
   timerDisplay.textContent = `${min}:${sec}`;
   sessionType.textContent = isWorkSession ? '工作時間' : '休息時間';
   startPauseBtn.textContent = isRunning ? '暫停' : '開始';
+  if (sessionDuration > 0) {
+    const pct = ((sessionDuration - remainingSeconds) / sessionDuration) * 100;
+    progressBar.style.width = pct + '%';
+  }
 }
+
+// ======= 休息小遊戲 =======
+function moveCatchBtn() {
+  const areaRect = gameArea.getBoundingClientRect();
+  const btnRect = catchBtn.getBoundingClientRect();
+  const maxLeft = areaRect.width - btnRect.width;
+  const maxTop = areaRect.height - btnRect.height;
+  catchBtn.style.left = Math.random() * maxLeft + 'px';
+  catchBtn.style.top = Math.random() * maxTop + 'px';
+}
+
+function showGame() {
+  gameScore = 0;
+  scoreDisplay.textContent = '得分：0';
+  gameArea.classList.remove('hidden');
+  moveCatchBtn();
+  gameInterval = setInterval(moveCatchBtn, 1000);
+}
+
+function hideGame() {
+  gameArea.classList.add('hidden');
+  clearInterval(gameInterval);
+}
+
+catchBtn.onclick = () => {
+  gameScore++;
+  scoreDisplay.textContent = '得分：' + gameScore;
+  moveCatchBtn();
+};
 function startTimer() {
   if (isRunning) return;
   isRunning = true;
+  sessionDuration = remainingSeconds;
   timer = setInterval(() => {
     if (remainingSeconds > 0) {
       remainingSeconds--;
@@ -56,10 +105,22 @@ function startTimer() {
     } else {
       clearInterval(timer);
       if (!isMuted) beep.play();
-      if (isWorkSession) increaseCount();
-      alert(isWorkSession ? '工作結束！休息一下吧！' : '休息結束，繼續努力！');
-      isWorkSession = !isWorkSession;
-      remainingSeconds = (isWorkSession ? workMin : restMin) * 60;
+      if (isWorkSession) {
+        increaseCount();
+        alert('工作結束！休息一下吧！');
+        sessionCount++;
+        isWorkSession = false;
+        const restTime = (sessionCount % 4 === 0) ? longRestMin : restMin;
+        remainingSeconds = restTime * 60;
+        showGame();
+      } else {
+        alert(`休息結束，繼續努力！ 本次得分：${gameScore}`);
+        hideGame();
+        gameScore = 0;
+        isWorkSession = true;
+        remainingSeconds = workMin * 60;
+      }
+      sessionDuration = remainingSeconds;
       updateDisplay();
       isRunning = false;
       startTimer();
@@ -77,22 +138,37 @@ function resetTimer() {
   clearInterval(timer);
   isWorkSession = true;
   remainingSeconds = workMin * 60;
+  sessionDuration = remainingSeconds;
+  sessionCount = 0;
+  hideGame();
+  gameScore = 0;
   updateDisplay();
 }
 function applySettings() {
   if (!isRunning) {
     workMin = parseInt(workInput.value) || 25;
     restMin = parseInt(restInput.value) || 5;
+    longRestMin = parseInt(longRestInput.value) || 15;
     isWorkSession = true;
     remainingSeconds = workMin * 60;
+    sessionDuration = remainingSeconds;
+    hideGame();
+    gameScore = 0;
     updateDisplay();
   }
+}
+
+function updateVolume() {
+  beep.volume = parseFloat(volumeInput.value);
+  localStorage.setItem('pomodoro_volume', volumeInput.value);
 }
 startPauseBtn.onclick = () => { isRunning ? pauseTimer() : startTimer(); };
 resetBtn.onclick = resetTimer;
 workInput.onchange = applySettings;
 restInput.onchange = applySettings;
+longRestInput.onchange = applySettings;
 muteCheckbox.onchange = () => { isMuted = muteCheckbox.checked; };
+volumeInput.oninput = updateVolume;
 settingsForm.onsubmit = (e) => { e.preventDefault(); };
 
 // ======= 番茄計數/日期 =======

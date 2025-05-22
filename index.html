@@ -28,17 +28,32 @@
         休息(分)
         <input type="number" id="restInput" min="1" max="30" value="5">
       </label>
+      <label>
+        長休(分)
+        <input type="number" id="longRestInput" min="1" max="60" value="15">
+      </label>
       <label class="mute-label">
         <input type="checkbox" id="muteCheckbox">
         靜音
       </label>
+      <label class="volume-label">
+        音量
+        <input type="range" id="volumeInput" min="0" max="1" step="0.05" value="1">
+      </label>
     </form>
     <div class="timer" id="timer">25:00</div>
+    <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
     <div class="buttons">
       <button id="startPauseBtn">開始</button>
       <button id="resetBtn">重設</button>
     </div>
     <div class="session-type" id="sessionType">工作時間</div>
+
+    <!-- 休息小遊戲區 -->
+    <div id="gameArea" class="game-area hidden">
+      <button id="catchBtn" class="catch-btn">點我</button>
+      <div id="scoreDisplay" class="score-display">得分：0</div>
+    </div>
 
     <!-- 任務清單區 -->
     <div class="todo-area">
