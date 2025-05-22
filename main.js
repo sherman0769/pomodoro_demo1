@@ -1,11 +1,14 @@
 // ======= 初始化參數與元素 =======
 let workMin = 25;
 let restMin = 5;
+let longRestMin = 15;
 let timer = null;
 let isRunning = false;
 let isWorkSession = true;
 let remainingSeconds = workMin * 60;
+let sessionDuration = remainingSeconds;
 let isMuted = false;
+let sessionCount = 0;
 
 const timerDisplay = document.getElementById('timer');
 const startPauseBtn = document.getElementById('startPauseBtn');
@@ -14,10 +17,13 @@ const sessionType = document.getElementById('sessionType');
 const beep = document.getElementById('beep');
 const workInput = document.getElementById('workInput');
 const restInput = document.getElementById('restInput');
+const longRestInput = document.getElementById('longRestInput');
 const muteCheckbox = document.getElementById('muteCheckbox');
+const volumeInput = document.getElementById('volumeInput');
 const settingsForm = document.getElementById('settingsForm');
 const themeToggle = document.getElementById('themeToggle');
 const todayCountElem = document.getElementById('todayCount');
+const progressBar = document.getElementById('progressBar');
 
 // todo區
 const todoForm = document.getElementById('todoForm');
@@ -33,6 +39,8 @@ function setTheme(dark) {
 themeToggle.onclick = () => setTheme(!document.body.classList.contains('dark'));
 window.onload = function() {
   setTheme(localStorage.getItem('pomodoro_theme') === 'dark');
+  volumeInput.value = localStorage.getItem('pomodoro_volume') || '1';
+  updateVolume();
   loadTodo();
   loadCount();
   updateDisplay();
@@ -45,10 +53,15 @@ function updateDisplay() {
   timerDisplay.textContent = `${min}:${sec}`;
   sessionType.textContent = isWorkSession ? '工作時間' : '休息時間';
   startPauseBtn.textContent = isRunning ? '暫停' : '開始';
+  if (sessionDuration > 0) {
+    const pct = ((sessionDuration - remainingSeconds) / sessionDuration) * 100;
+    progressBar.style.width = pct + '%';
+  }
 }
 function startTimer() {
   if (isRunning) return;
   isRunning = true;
+  sessionDuration = remainingSeconds;
   timer = setInterval(() => {
     if (remainingSeconds > 0) {
       remainingSeconds--;
@@ -58,8 +71,17 @@ function startTimer() {
       if (!isMuted) beep.play();
       if (isWorkSession) increaseCount();
       alert(isWorkSession ? '工作結束！休息一下吧！' : '休息結束，繼續努力！');
+      if (isWorkSession) {
+        sessionCount++;
+      }
       isWorkSession = !isWorkSession;
-      remainingSeconds = (isWorkSession ? workMin : restMin) * 60;
+      if (isWorkSession) {
+        remainingSeconds = workMin * 60;
+      } else {
+        const restTime = (sessionCount % 4 === 0) ? longRestMin : restMin;
+        remainingSeconds = restTime * 60;
+      }
+      sessionDuration = remainingSeconds;
       updateDisplay();
       isRunning = false;
       startTimer();
@@ -77,22 +99,33 @@ function resetTimer() {
   clearInterval(timer);
   isWorkSession = true;
   remainingSeconds = workMin * 60;
+  sessionDuration = remainingSeconds;
+  sessionCount = 0;
   updateDisplay();
 }
 function applySettings() {
   if (!isRunning) {
     workMin = parseInt(workInput.value) || 25;
     restMin = parseInt(restInput.value) || 5;
+    longRestMin = parseInt(longRestInput.value) || 15;
     isWorkSession = true;
     remainingSeconds = workMin * 60;
+    sessionDuration = remainingSeconds;
     updateDisplay();
   }
+}
+
+function updateVolume() {
+  beep.volume = parseFloat(volumeInput.value);
+  localStorage.setItem('pomodoro_volume', volumeInput.value);
 }
 startPauseBtn.onclick = () => { isRunning ? pauseTimer() : startTimer(); };
 resetBtn.onclick = resetTimer;
 workInput.onchange = applySettings;
 restInput.onchange = applySettings;
+longRestInput.onchange = applySettings;
 muteCheckbox.onchange = () => { isMuted = muteCheckbox.checked; };
+volumeInput.oninput = updateVolume;
 settingsForm.onsubmit = (e) => { e.preventDefault(); };
 
 // ======= 番茄計數/日期 =======
