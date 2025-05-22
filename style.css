@@ -244,6 +244,24 @@ footer {
   opacity: 0.88;
   letter-spacing: 2px;
 }
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 0.7em 1.2em;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+.toast.show {
+  opacity: 1;
+}
 @media (max-width: 540px) {
   .container {
     margin: 9px 0 0 0;

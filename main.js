@@ -18,6 +18,7 @@ const muteCheckbox = document.getElementById('muteCheckbox');
 const settingsForm = document.getElementById('settingsForm');
 const themeToggle = document.getElementById('themeToggle');
 const todayCountElem = document.getElementById('todayCount');
+const toastElem = document.getElementById('toast');
 
 // todo區
 const todoForm = document.getElementById('todoForm');
@@ -46,6 +47,15 @@ function updateDisplay() {
   sessionType.textContent = isWorkSession ? '工作時間' : '休息時間';
   startPauseBtn.textContent = isRunning ? '暫停' : '開始';
 }
+
+function showToast(message) {
+  toastElem.textContent = message;
+  toastElem.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => {
+    toastElem.classList.remove('show');
+  }, 3000);
+}
 function startTimer() {
   if (isRunning) return;
   isRunning = true;
@@ -57,7 +67,7 @@ function startTimer() {
       clearInterval(timer);
       if (!isMuted) beep.play();
       if (isWorkSession) increaseCount();
-      alert(isWorkSession ? '工作結束！休息一下吧！' : '休息結束，繼續努力！');
+      showToast(isWorkSession ? '工作結束！休息一下吧！' : '休息結束，繼續努力！');
       isWorkSession = !isWorkSession;
       remainingSeconds = (isWorkSession ? workMin : restMin) * 60;
       updateDisplay();
